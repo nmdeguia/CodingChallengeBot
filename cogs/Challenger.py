@@ -7,6 +7,7 @@ from discord import option
 import os
 import dotenv
 
+from lib.WebTools import WebTools
 from lib.Variables import Variables
 from lib.Logger import Logger
 log = Logger(logfile = "app.log", shared = True, identifier = __name__[5:])
@@ -39,7 +40,7 @@ class Challenger(commands.Cog):
     @commands.slash_command(name = "new_problem")
     async def new_problem(self, interaction):
         number = self.__get_problem_number(force_next=True)
-        log.info(f"New problem {number} requested by {interaction.user.name}")
+        log.info(f"Problem {number} requested by {interaction.user.name}")
         await self.__post_problem(interaction, number)
         await self.__post_guidelines(interaction)
         await self.__create_post_discussion_thread(interaction, number)
@@ -48,13 +49,13 @@ class Challenger(commands.Cog):
     @commands.slash_command(name = "get_problem")
     @option(name = "number", required = True)
     async def get_problem(self, interaction, number: int):
-        log.info(f"Get problem {number} requested by {interaction.user.name}")
+        log.info(f"Problem {number} requested by {interaction.user.name}")
         await self.__post_problem(interaction, number)
         
     @commands.slash_command(name = "current_problem")
     async def current_problem(self, interaction):
         number = self.__get_problem_number()
-        log.info(f"Current problem {number} requested by {interaction.user.name}")
+        log.info(f"Problem {number} requested by {interaction.user.name}")
         await self.__post_problem(interaction, number)
                 
     """
@@ -73,6 +74,13 @@ class Challenger(commands.Cog):
         self.var.reload()
         log.info(f"Problem number updated {self.var.problem_number - 1} "\
             f"-> {self.var.problem_number}")
+            
+    def __fetch_problem_ss(self, number):
+        web_link = f"{self.var.problem_source}={number}"
+        save_path = f"{self.var.problem_images}/problem_{number}.png"
+        utils = WebTools()
+        utils.screenshot_by_id(web_link, save_path, element_id="content")
+        log.info(f"Saved image: {save_path}")
     
     # Check if current problem is already posted
     def __is_new_day_today(self):
@@ -84,16 +92,19 @@ class Challenger(commands.Cog):
             return True
         else:
             return False
-            
+                        
     async def __post_problem(self, interaction, number):
         try:
             await interaction.respond(
                 f"**Problem {number}**: <{self.var.problem_source}={number}>",
                 file=discord.File(f"{self.var.problem_images}/problem_{number}.png"))
         except:
-            log.warning(f"No image found: {self.var.problem_images}/problem_{number}.png")
+            await interaction.response.defer(ephemeral=True)
+            self.__fetch_problem_ss(number)
+        finally:
             await interaction.respond(
-                f"**Problem {number}**: <{self.var.problem_source}={number}>")
+                f"**Problem {number}**: <{self.var.problem_source}={number}>",
+                file=discord.File(f"{self.var.problem_images}/problem_{number}.png"))
         log.info(f"Problem {number} posted")
         
     async def __post_guidelines(self, interaction):        
