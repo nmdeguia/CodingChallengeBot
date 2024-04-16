@@ -7,7 +7,6 @@ import dotenv
 
 from lib.Variables import Variables
 from lib.Submission import Submission
-from lib.Submission import SubmissionBox
 from lib.Logger import Logger
 log = Logger(logfile = "app.log", shared = True, identifier = __name__[5:])
 
@@ -21,33 +20,6 @@ class Scoreboard(commands.Cog):
     when the user starts a message with '/'. Keep functions simple,
     and call subroutines to do the work instead.
     """
-    @commands.slash_command(name = "submission_box")
-    async def submission_box(self, interaction):
-        player_id = f"({interaction.guild.id}){interaction.user.name}"
-        submission_modal = SubmissionBox(title="Submit Problem Solution")
-        await interaction.send_modal(submission_modal)
-        await submission_modal.wait()
-        submission = submission_modal.submission
-        timestamp_raw, timestamp = log.timestamp_raw()
-        log.info(f"({player_id}) Submitted at {log.timestamp()}")
-        log.info(f"({player_id}) Problem number: {submission.problem_number}")
-        log.info(f"({player_id}) Language: {submission.language}")
-        log.info(f"({player_id}) Total lines: {submission.total_lines}")
-        log.info(f"({player_id}) Total runtime: {submission.total_runtime}")
-        is_correct = self.__check_player_answer(submission.problem_number, submission.answer)
-        if is_correct == True:
-            await interaction.respond("Answer is correct. Submission recorded.")
-            log.info(f"({player_id}) Answer correct")
-            self.__record_player_submission(
-                player = player_id, 
-                submission = submission, 
-                timestamp_raw = timestamp_raw, 
-                timestamp = timestamp)
-        else:
-            await interaction.respond("Answer is incorrect. Please try again.")
-            log.info(f"({player_id}) Answer incorrect")
-            
-    # Submit command but using options only, submit_modal uses full modal dialogue box
     @commands.slash_command(name = "submit")
     @option("problem", required=True)
     @option("answer", required=True)
@@ -71,7 +43,12 @@ class Scoreboard(commands.Cog):
         log.info(f"({player_id}) Total runtime: {total_runtime}")
         is_correct = self.__check_player_answer(submission.problem_number, submission.answer)
         if is_correct == True:
-            await interaction.respond("Answer is correct. Submission recorded.")
+            embed = discord.Embed(
+                description=f"**Problem {submission.problem_number}**: {submission.language} "\
+                f"({submission.total_lines} lines), "\
+                f"**Runtime**: {submission.total_runtime}s")
+            await interaction.response.send_message("Answer is correct. Submission recorded.", 
+                embeds=[embed])
             log.info(f"({player_id}) Answer correct")
             self.__record_player_submission(
                 player = player_id, 

@@ -36,11 +36,10 @@ class Challenger(commands.Cog):
                 "**/current_problem** to show current problem\n"\
                 "**/new_problem** to fetch new problem")
         
-    @commands.is_owner()
     @commands.slash_command(name = "new_problem")
     async def new_problem(self, interaction):
         number = self.__get_problem_number(force_next=True)
-        log.info(f"Problem {number} requested by {interaction.user.name}")
+        log.info(f"Problem {number} requested by {interaction.user.name} (new)")
         await self.__post_problem(interaction, number)
         await self.__post_guidelines(interaction)
         await self.__create_post_discussion_thread(interaction, number)
@@ -49,7 +48,7 @@ class Challenger(commands.Cog):
     @commands.slash_command(name = "get_problem")
     @option(name = "number", required = True)
     async def get_problem(self, interaction, number: int):
-        log.info(f"Problem {number} requested by {interaction.user.name}")
+        log.info(f"Problem {number} requested by {interaction.user.name} (get)")
         await self.__post_problem(interaction, number)
         
     @commands.slash_command(name = "current_problem")
