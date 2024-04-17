@@ -31,6 +31,8 @@ class Challenger(commands.Cog):
             await self.__post_guidelines(interaction)
             await self.__create_post_discussion_thread(interaction, number)
             self.__inc_problem_number()
+            self.var.update("DATE", str(log.datestamp()))
+            self.var.reload()
         else:
             await interaction.respond(f"Problem {number} already posted for today.\n"\
                 "**/current_problem** to show current problem\n"\
@@ -86,8 +88,6 @@ class Challenger(commands.Cog):
         self.var.reload()
         # self.var.date is the last date posted for a new problem
         if log.datestamp() != str(self.var.date):
-            self.var.update("DATE", str(log.datestamp()))
-            self.var.reload()
             return True
         else:
             return False
@@ -100,7 +100,6 @@ class Challenger(commands.Cog):
         except:
             await interaction.response.defer(ephemeral=True)
             self.__fetch_problem_ss(number)
-        finally:
             await interaction.respond(
                 f"**Problem {number}**: <{self.var.problem_source}={number}>",
                 file=discord.File(f"{self.var.problem_images}/problem_{number}.png"))
@@ -108,7 +107,7 @@ class Challenger(commands.Cog):
         
     async def __post_guidelines(self, interaction):        
         await interaction.respond(
-            "To submit your answers, use the command **/submit** or **/submission_box**. "\
+            "To submit your answers, use the command **/submit**. "\
             "A post discussion thread will be created where you "\
             "can post your algorithms, codes, and discussions.")
         

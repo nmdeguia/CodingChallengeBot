@@ -38,6 +38,7 @@ class Scoreboard(commands.Cog):
         submission = Submission(problem, answer, language, total_lines, total_runtime)
         log.info(f"({player_id}) Submitted at {log.timestamp()}")
         log.info(f"({player_id}) Problem number: {problem}")
+        log.info(f"({player_id}) Answer: {answer}")
         log.info(f"({player_id}) Language: {language}")
         log.info(f"({player_id}) Total lines: {total_lines}")
         log.info(f"({player_id}) Total runtime: {total_runtime}")
