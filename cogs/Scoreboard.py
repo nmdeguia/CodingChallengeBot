@@ -56,6 +56,7 @@ class Scoreboard(commands.Cog):
                 submission = submission, 
                 timestamp_raw = timestamp_raw, 
                 timestamp = timestamp)
+            await self.__mention_player_in_thread(interaction, interaction.user.id, submission)
         else:
             await interaction.respond("Answer is incorrect. Please try again.")
             log.info(f"({player_id}) Answer incorrect")
@@ -73,6 +74,12 @@ class Scoreboard(commands.Cog):
     @commands.slash_command(name = "personal_stats")
     async def personal_stats(self, interaction):
         log.info(f"Personal stats requested by: {interaction.user.name}")
+        await interaction.respond("Command is currently in development.")
+
+    @commands.slash_command(name = "problem_stats")
+    @option("number", required=True)
+    async def problem_stats(self, interaction, number: int):
+        log.info(f"Problem {number} stats requested by: {interaction.user.name}")
         await interaction.respond("Command is currently in development.")
         
     """
@@ -105,6 +112,22 @@ class Scoreboard(commands.Cog):
             file.write(f"{timestamp_raw},")
             file.write(f"{timestamp}\n")
         log.info(f"({player}) Result recorded")
+
+    async def __mention_player_in_thread(self, interaction, player, submission):
+        thread = self.__get_problem_post_discussion_thread(
+                     interaction, f"Problem {submission.problem_number}")
+        embed = discord.Embed(
+            description=f"**Problem {submission.problem_number}**: {submission.language} "\
+            f"({submission.total_lines} lines), "\
+            f"**Runtime**: {submission.total_runtime}s")
+        await thread.send(f"<@{player}> answered:", 
+            embeds=[embed])
+
+    def __get_problem_post_discussion_thread(self, interaction, problem):
+        threads = interaction.channel.threads
+        for thread in threads:
+            if str(problem) in str(thread):
+                return thread
         
     def __fetch_player_stats(self, path): pass
     

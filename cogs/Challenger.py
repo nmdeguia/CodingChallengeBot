@@ -22,6 +22,15 @@ class Challenger(commands.Cog):
     when the user starts a message with '/'. Keep functions simple,
     and call subroutines to do the work instead.
     """
+    @commands.slash_command(name = "dbg_problem")
+    @commands.is_owner()
+    async def dbg_problem(self, interaction):
+        number = self.__get_problem_number()
+        log.info(f"Problem {number} requested by {interaction.user.name}")
+        await self.__post_problem(interaction, number)
+        await self.__post_guidelines(interaction)
+        await self.__create_post_discussion_thread(interaction, number)
+
     @commands.slash_command(name = "problem")
     async def problem(self, interaction):
         number = self.__get_problem_number()
@@ -106,13 +115,14 @@ class Challenger(commands.Cog):
         log.info(f"Problem {number} posted")
         
     async def __post_guidelines(self, interaction):        
-        await interaction.respond(
+        await interaction.send(
             "To submit your answers, use the command **/submit**. "\
+            "You can resubmit an answer with the same command. "\
             "A post discussion thread will be created where you "\
             "can post your algorithms, codes, and discussions.")
         
     async def __post_command_help(self, interaction):
-        await interaction.respond(
+        await interaction.send(
             "Commands:\n\n"\
             "**/problem**, **/new_problem**, **/get_problem** -- fetch problems\n"\
             "**/submit**, **/submission_box** -- submit answers\n"\
