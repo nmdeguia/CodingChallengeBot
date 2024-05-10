@@ -21,6 +21,7 @@ class Scoreboard(commands.Cog):
     and call subroutines to do the work instead.
     """
     @commands.slash_command(name = "submit")
+    @commands.slash_command(description = "Submit answer to any problem")
     @option("problem", required=True)
     @option("answer", required=True)
     @option("language", required=True)

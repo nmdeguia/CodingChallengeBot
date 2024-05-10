@@ -32,6 +32,7 @@ class Challenger(commands.Cog):
         await self.__create_post_discussion_thread(interaction, number)
 
     @commands.slash_command(name = "problem")
+    @commands.slash_command(description = "Request a new problem (1 per day only)")
     async def problem(self, interaction):
         number = self.__get_problem_number()
         log.info(f"Problem {number} requested by {interaction.user.name}")
@@ -48,6 +49,7 @@ class Challenger(commands.Cog):
                 "**/new_problem** to fetch new problem")
         
     @commands.slash_command(name = "new_problem")
+    @commands.slash_command(description = "Force request a new problem")
     async def new_problem(self, interaction):
         number = self.__get_problem_number(force_next=True)
         log.info(f"Problem {number} requested by {interaction.user.name} (new)")
@@ -56,13 +58,15 @@ class Challenger(commands.Cog):
         await self.__create_post_discussion_thread(interaction, number)
         self.__inc_problem_number()
         
-    @commands.slash_command(name = "get_problem")
+    @commands.slash_command(name = "show_problem")
+    @commands.slash_command(description = "Show problem (does not increment current daily problem)")
     @option(name = "number", required = True)
-    async def get_problem(self, interaction, number: int):
+    async def show_problem(self, interaction, number: int):
         log.info(f"Problem {number} requested by {interaction.user.name} (get)")
         await self.__post_problem(interaction, number)
         
     @commands.slash_command(name = "current_problem")
+    @commands.slash_command(description = "Show current problem (does not increment current daily problem)")
     async def current_problem(self, interaction):
         number = self.__get_problem_number()
         log.info(f"Problem {number} requested by {interaction.user.name}")
@@ -107,7 +111,7 @@ class Challenger(commands.Cog):
                 f"**Problem {number}**: <{self.var.problem_source}={number}>",
                 file=discord.File(f"{self.var.problem_images}/problem_{number}.png"))
         except:
-            await interaction.response.defer(ephemeral=True)
+            await interaction.response.defer(ephemeral=False)
             self.__fetch_problem_ss(number)
             await interaction.respond(
                 f"**Problem {number}**: <{self.var.problem_source}={number}>",
@@ -124,7 +128,7 @@ class Challenger(commands.Cog):
     async def __post_command_help(self, interaction):
         await interaction.send(
             "Commands:\n\n"\
-            "**/problem**, **/new_problem**, **/get_problem** -- fetch problems\n"\
+            "**/problem**, **/new_problem**, **/show_problem** -- fetch problems\n"\
             "**/submit**, **/submission_box** -- submit answers\n"\
             "**/scoreboard**, **/global_scoreboard**, **/personal_stats**\n")
             
